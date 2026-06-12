@@ -4,7 +4,7 @@ import os
 import System
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import hàm gộp quy trình mới của bạn thay vì import hàm lẻ cũ
-from Chanel.Binary_Object import transmitter_ver_2 
+from Chanel.Binary_Object import Receiver
 
 
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     os.makedirs(path_output, exist_ok=True)
 
     # Đưa duy nhất hàm quy trình gộp (RAM-based) vào danh sách xử lý
-    list_of_function = [transmitter_ver_2]
+    list_of_function = [Receiver]
 
     # Kích hoạt hệ thống đa luồng
     System.performance(list_of_function, path_input, path_output)
