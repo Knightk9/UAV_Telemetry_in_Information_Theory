@@ -72,7 +72,7 @@ def transmitter_ver_2(path_input,path_output):
     list_of_conv = [p1, p2, p3]
     
     Packet_ver_Huffman = Huffman_Encoder(path_input)
-    convolutional_code = conv_decode("00" + Packet_ver_Huffman.huffman_bit_string + "00",list_of_conv )
+    convolutional_code = conv_decode("000" + Packet_ver_Huffman.huffman_bit_string + "000",list_of_conv )
     Packet_ver_Huffman.huffman_bit_string = convolutional_code
     new_file_name_Huffman = f"{Packet_ver_Huffman.name}_processed.json"
     full_path_output = os.path.join(path_output, new_file_name_Huffman)
@@ -98,7 +98,9 @@ def transmitter_ver_2(path_input,path_output):
     return full_path_output
 
 
-
+"""
+Day la nho Gemini lam ho :3
+"""
 def viterbi_sliding_window(processed_bits_str):
     # 1. Khởi tạo FSM chuẩn quy ước dịch trái của bạn
     FSM = {
@@ -236,40 +238,179 @@ def viterbi_sliding_window(processed_bits_str):
     return clean_huffman_string
 
 
+
+"""
+Về bản chất, thuật toán này không sai,nhưng với tôi nó chưa đủ hiệu quả. Vì cơ bản ở đây tôi đặt câu hỏi là :
+nếu 2 bit trước đó ở trạng thái này thì bit nào mới là bit tốt nhất để nối với nó, điều này chưa thỏa mã được tôi.
+"""
+def GreedY_Viterbi_Algorithm(processed_bits_string):
+    transition_matrix_B = {
+        #00           0-00                                  1-00
+        0: {0: {"next": 0, "encode": Binary_Object('000')}, 1: {"next": 2, "encode": Binary_Object("111")} , "code" : "0"},
+        #01            0-01                                 1-01
+        1: {0: {"next": 0, "encode": Binary_Object('110')}, 1: {"next": 2, "encode": Binary_Object("001")} , "code" : "0"},
+        #10            0-10                                 1-10
+        2: {0: {"next": 1, "encode": Binary_Object('101')}, 1: {"next": 3, "encode": Binary_Object("010")} , "code" : "1"},
+        #11            0-11                                 1-11
+        3: {0: {"next": 1, "encode": Binary_Object('011')}, 1: {"next": 3, "encode": Binary_Object("100")} , "code" : "1"},
+    }
+    bits_to_process = [Binary_Object(processed_bits_string[i:i+3]) for i in range(0, len(processed_bits_string), 3)]
+
+    
+    #1. Initialization
+    first_symbol = bits_to_process[0]
+    second_symbol = bits_to_process[1]
+    surival_path = [] # Time,Path
+    cost_path = [{}] #Time,path:cost
+    #Vi 2 bit dau da duoc chen them so 0 de ma hoa nen ta can xet rieng truowng hop nay
+    #00-00
+    cost_path[0][0] = (Binary_Object("000") - first_symbol) + (Binary_Object("000") - second_symbol)
+    #10-00
+    cost_path[0][2] = (Binary_Object("000") - first_symbol) + (Binary_Object("111") - second_symbol)
+    #0-1-00
+    cost_path[0][1] = (Binary_Object("111") - first_symbol) + (Binary_Object("101") - second_symbol)
+    #1-1-00
+    cost_path[0][3] = (Binary_Object("111") - first_symbol) + (Binary_Object("010") - second_symbol)
+    tim_min = cost_path[0][0]
+    first_path = 0
+    for i in range(4):
+        if cost_path[0][i] <= tim_min:
+            tim_min = cost_path[0][i]  # Đã sửa lỗi cập nhật min
+            first_path = i
+    surival_path.append(first_path)
+    #2 Performnace
+    for i in range(len(bits_to_process)):
+        prev_state = surival_path[-1]
+        surival_path.append(
+            transition_matrix_B[prev_state][0]["next"] 
+            if (transition_matrix_B[prev_state][0]["encode"] - bits_to_process[i]) < (transition_matrix_B[prev_state][1]["encode"] - bits_to_process[i]) 
+            else transition_matrix_B[prev_state][1]["next"]
+        )
+    res = ""
+    for i in surival_path:
+        res += transition_matrix_B[i]["code"]
+
+    return res
+
+
+
+"""
+Vì vậy, ở đây, tôi muốn đặt thêm một điều kiện tốt hơn để tối ưu được nó:
+tôi sẽ đặt ở đây 2 câu hỏi:
+1. Nếu đây là bit 0, thi trang thai nao la tot nhat voi no,Nếu đây là bit 1 thì trạng thái nào là tốt nhất với nó
+2. Nếu trạng thái hiện tại là tốt nhất với nó thì đâu là trạng thái trước đó tốt nhát với nó trong trường hợp bit hiện tại là bit 1 và tương tự như bit 0
+
+"""
+def DynamicPrograming_Viterbi_Algorithm(processed_bits_string):
+    
+    #Tôi vẫn giũa lại điều kiện cốt lõi so với bài toán trên, nhưng tôi sẽ thêm vào 2 nhân tốt mới
+    transition_matrix_B = {
+        #00           0-00                                  1-00
+        0: {0: {"next": 0, "encode": Binary_Object('000')}, 1: {"next": 2, "encode": Binary_Object("111")} , "code" : "0"},
+        #01            0-01                                 1-01
+        1: {0: {"next": 0, "encode": Binary_Object('110')}, 1: {"next": 2, "encode": Binary_Object("001")} , "code" : "0"},
+        #10            0-10                                 1-10
+        2: {0: {"next": 1, "encode": Binary_Object('101')}, 1: {"next": 3, "encode": Binary_Object("010")} , "code" : "1"},
+        #11            0-11                                 1-11
+        3: {0: {"next": 1, "encode": Binary_Object('011')}, 1: {"next": 3, "encode": Binary_Object("100")} , "code" : "1"},
+    }
+    bits_to_process = [Binary_Object(processed_bits_string[i:i+3]) for i in range(0, len(processed_bits_string), 3)]
+    surival_cost = {0: 0, 1: float('inf'), 2: float('inf'), 3: float('inf')} # Li do o state 0 = 0 vi toi da cho 3 bit dau o pah tren kia la 000 roi
+    surival_path = []# Luu lai nhung con duong toi uu cua tung state
+    for T in range(0,len(bits_to_process)):
+        current_cost = {} #Cost cua hien tai
+        current_path = {} #Trang thai cua hien tai
+        symbol = bits_to_process[T]
+        #1. Neu doan bit dau la 0, ta co 2 state: 0,1
+        cost_from_0 = surival_cost[0] + (transition_matrix_B[0][0]["encode"] - symbol)
+        cost_from_1 = surival_cost[1] + (transition_matrix_B[1][0]["encode"] - symbol)
+        current_cost[0] = min(cost_from_0, cost_from_1)
+        current_path[0] = 0 if cost_from_0 < cost_from_1 else 1
+
+        cost_from_2 = surival_cost[2] + (transition_matrix_B[2][0]["encode"] - symbol)
+        cost_from_3 = surival_cost[3] + (transition_matrix_B[3][0]["encode"] - symbol)
+        current_cost[1] = min(cost_from_2, cost_from_3)
+        current_path[1] = 2 if cost_from_2 < cost_from_3 else 3
+
+        #2. Neu doan bit dau vao la 1, ta co 2 state: 2,3
+        cost_from_0_b1 = surival_cost[0] + (transition_matrix_B[0][1]["encode"] - symbol)
+        cost_from_1_b1 = surival_cost[1] + (transition_matrix_B[1][1]["encode"] - symbol)
+        current_cost[2] = min(cost_from_0_b1, cost_from_1_b1)
+        current_path[2] = 0 if cost_from_0_b1 < cost_from_1_b1 else 1
+
+        cost_from_2_b1 = surival_cost[2] + (transition_matrix_B[2][1]["encode"] - symbol)
+        cost_from_3_b1 = surival_cost[3] + (transition_matrix_B[3][1]["encode"] - symbol)
+        current_cost[3] = min(cost_from_2_b1, cost_from_3_b1)
+        current_path[3] = 2 if cost_from_2_b1 < cost_from_3_b1 else 3
+
+        surival_path.append(current_path)
+        for i in range(4):
+            surival_cost[i] = current_cost[i]
+
+    true_path = 0
+    total_bits_error = float("inf")
+    for i in range(4):
+        if surival_cost[i] < total_bits_error:
+            total_bits_error = surival_cost[i]
+            true_path = i
+
+    decoded_bits_list = []
+    for current_path_dict in reversed(surival_path):
+        prev_state = current_path_dict[true_path]
+        decoded_bits_list.append(transition_matrix_B[prev_state]["code"])
+        true_path = prev_state
+    decoded_bits_list.reverse()
+    res = "".join(decoded_bits_list)
+    len_of_bits = len(res)
+    res_clean = res[3:-3]
+    return res_clean,total_bits_error,len_of_bits
+
+
+
 def Receiver(path_file, path_output):
-    # 1. Đọc dữ liệu JSON từ khối mô phỏng kênh truyền / khối phát
+    
     with open(path_file, 'r', encoding='utf-8') as f:
         packet_data = json.load(f)
-        
-    # Sử dụng .get() để lấy an toàn cả 2 trường hợp đặt tên key
+
     processed_bits_str = packet_data.get("Processed_bits", packet_data.get("Huffman_bits"))
     
-    # 2. Gọi thuật toán cửa sổ trượt Viterbi để sửa lỗi và giải mã chuỗi bit
-    clean_huffman_string = viterbi_sliding_window(processed_bits_str)
+    # Giải mã sửa lỗi bằng Viterbi
+    clean_huffman_string, total_bits_error, len_of_bits = DynamicPrograming_Viterbi_Algorithm(processed_bits_str)
     print(f"✔️ Đã giải mã Viterbi cuốn chiếu thành công!")
     
-    # 3. 🛠️ ĐỒNG BỘ RAM: Cập nhật chuỗi bit sạch vào packet_data TRƯỚC KHI GIẢI MÃ NGUỒN
+    BER = total_bits_error / len_of_bits if len_of_bits > 0 else 0
+    
+    if BER > 0.5:
+        print("❌ File da loi hon 50%, Khong the Ma hoa tiep duoc nua")
+ 
+        
+        # 🛠️ Tính toán Packet Loss real-time ngay trước khi thoát hàm
+
+
+    
     packet_data["Processed_bits"] = clean_huffman_string
     
-    # 🛠️ TRUYỀN THẲNG packet_data (đã sạch) sang cho bộ giải mã Huffman xử lý
-    Huffman_Decoder(packet_data, path_output, os.path.basename(path_file))
+    # Giải mã nguồn và khôi phục CSV
+    texxt, delay = Huffman_Decoder(packet_data, path_output, os.path.basename(path_file))
+    
+    # Tính thông lượng thực tế (bit/s hoặc ký tự/s)
+    throughput = (len_of_bits - total_bits_error) / delay if delay > 0 else 0
+    
+    # 🛠️ Sửa lỗi chữ f nằm trong chuỗi in và làm tròn .2f cho gọn
+    print(f" -> Ký tự khôi phục trên giây: {throughput:.2f} ký tự/s")
+    print(f" -> Tỷ lệ ký tự bị lỗi (BER): {BER * 100:.2f} %")
     print(f"✔️ Đã giải mã Huffman thành công!")
+    
     return clean_huffman_string
 
 
 def Huffman_Decoder(packet_data, path_output_csv, file_name):
-    # 🛠️ NHẬN TRỰC TIẾP packet_data TỪ RAM, không cần mở lại file trên ổ cứng nữa!
-    
-    # 1. Bóc tách các thành phần cần thiết từ dictionary truyền vào
     t_start = packet_data["metadata"]["tx_timestamp"]
     decoder_dict = packet_data["decoder_dict"]
     entropy = packet_data["metadata"]["entropy"]
     compression_ratio = packet_data["metadata"]["compression_ratio"]
-    
-    # Lấy chuỗi bit ĐÃ ĐƯỢC LÀM SẠCH bởi Viterbi ở hàm Receiver phía trên
     huffman_bits = packet_data["Processed_bits"]
     
-    # --- BẮT ĐẦU QUÁ TRÌNH GIẢI MÃ CHUỖI BIT ---
     current_code = ""
     decoded_text_list = []
     
@@ -277,16 +418,13 @@ def Huffman_Decoder(packet_data, path_output_csv, file_name):
         current_code += bit
         if current_code in decoder_dict:
             decoded_text_list.append(decoder_dict[current_code])
-            current_code = ""  # Reset để tìm ký tự tiếp theo
+            current_code = ""
             
     decoded_text = "".join(decoded_text_list)
-    # --- QUÁ TRÌNH GIẢI MÃ KẾT THÚC XONG XUÔI ---
     
-    # 2. 🕒 Chụp ngay mốc thời gian hệ thống tại thời điểm này
     t_end = time.time()
     total_delay = t_end - t_start
     
-    # === XỬ LÝ GHI LẠI VÀO FILE .CSV NGUYÊN BẢN ===
     name, _ = os.path.splitext(file_name)
     clean_name = name.replace("_processed", "").replace("_huffmanver", "")
     csv_file_name = f"{clean_name}_recovered.csv"
@@ -299,10 +437,9 @@ def Huffman_Decoder(packet_data, path_output_csv, file_name):
     with open(full_path_csv, 'w', encoding='utf-8') as csv_f:
         csv_f.write(decoded_text)
     
-    # In báo cáo hiệu năng ra màn hình Terminal
     print(f"\n🏁 [RECEIVER] Đã giải mã xong file: {file_name}")
     print(f" -> 💾 Đã khôi phục file gốc tại: {full_path_csv}")
-    print(f" -> Đô dài chuỗi bit sạch: {len(huffman_bits)} bits")
+    print(f" -> Độ dài chuỗi bit sạch: {len(huffman_bits)} bits")
     print(f" -> Entropy của file: {entropy:.4f}")
     print(f" -> Compression_ratio: {compression_ratio:.4f}")
     print(f" -> Ký tự khôi phục: {len(decoded_text)} ký tự")
