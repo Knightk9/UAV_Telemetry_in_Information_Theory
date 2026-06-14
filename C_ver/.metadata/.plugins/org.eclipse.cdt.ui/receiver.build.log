@@ -1,0 +1,27 @@
+16:15:06 **** Incremental Build of configuration Debug for project receiver ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F401xC -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:180:69: warning: '%+05d' directive output may be truncated writing between 5 and 6 bytes into a region of size between 3 and 6 [-Wformat-truncation=]
+  180 |                 snprintf(lcd_line1, sizeof(lcd_line1), "%+04d %+05d %+05d", disp_p, disp_y, disp_r);
+      |                                                                     ^~~~~
+../Core/Src/main.c:180:56: note: directive argument in the range [-32768, 32767]
+  180 |                 snprintf(lcd_line1, sizeof(lcd_line1), "%+04d %+05d %+05d", disp_p, disp_y, disp_r);
+      |                                                        ^~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:180:17: note: 'snprintf' output between 17 and 21 bytes into a destination of size 17
+  180 |                 snprintf(lcd_line1, sizeof(lcd_line1), "%+04d %+05d %+05d", disp_p, disp_y, disp_r);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "receiver.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/khanh/Programming/LTTT/receiver/STM32F401RCTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="receiver.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: receiver.elf
+ 
+arm-none-eabi-size  receiver.elf 
+arm-none-eabi-objdump -h -S receiver.elf  > "receiver.list"
+   text	   data	    bss	    dec	    hex	filename
+  58464	    512	   8624	  67600	  10810	receiver.elf
+Finished building: default.size.stdout
+ 
+Finished building: receiver.list
+ 
+
+16:15:07 Build Finished. 0 errors, 1 warnings. (took 951ms)
+

@@ -1,0 +1,4 @@
+../Core/Src/I2C.c:4:19:i2c_write	1
+../Core/Src/I2C.c:10:19:i2c_read	1
+../Core/Src/I2C.c:17:19:IICwriteBit	2
+../Core/Src/I2C.c:26:19:IICwriteBits	2

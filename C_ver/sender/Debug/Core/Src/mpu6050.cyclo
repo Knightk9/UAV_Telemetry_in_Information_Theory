@@ -1,0 +1,17 @@
+../Drivers/CMSIS/Include/core_cm4.h:1938:34:__NVIC_SystemReset	1
+../Core/Src/mpu6050.c:24:23:inv_row_2_scale	7
+../Core/Src/mpu6050.c:44:23:inv_orientation_matrix_to_scalar	1
+../Core/Src/mpu6050.c:53:13:run_self_test	2
+../Core/Src/mpu6050.c:97:6:MPU6050_setClockSource	1
+../Core/Src/mpu6050.c:107:6:MPU6050_newValues	8
+../Core/Src/mpu6050.c:171:6:MPU6050_setFullScaleGyroRange	1
+../Core/Src/mpu6050.c:180:6:MPU6050_setFullScaleAccelRange	1
+../Core/Src/mpu6050.c:191:6:MPU6050_setSleepEnabled	1
+../Core/Src/mpu6050.c:199:9:MPU6050_getDeviceID	1
+../Core/Src/mpu6050.c:209:9:MPU6050_testConnection	2
+../Core/Src/mpu6050.c:220:6:MPU6050_setI2CMasterModeEnabled	1
+../Core/Src/mpu6050.c:229:6:MPU6050_setI2CBypassEnabled	1
+../Core/Src/mpu6050.c:238:6:MPU6050_initialize	1
+../Core/Src/mpu6050.c:253:6:DMP_Init	2
+../Core/Src/mpu6050.c:287:6:Read_DMP	2
+../Core/Src/mpu6050.c:308:5:Read_Temperature	2

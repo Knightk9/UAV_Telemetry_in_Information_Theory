@@ -1,0 +1,165 @@
+#include "huffman.h"
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
+
+static int CompareSymbols(const void *a, const void *b) {
+    SymbolCode_t *sa = (SymbolCode_t *)a;
+    SymbolCode_t *sb = (SymbolCode_t *)b;
+    if (sa->code_len != sb->code_len) {
+        return sa->code_len - sb->code_len;
+    }
+    return sa->symbol - sb->symbol;
+}
+
+static void GetCodeLengths(HuffmanNode_t *root, uint8_t depth, int16_t *syms, uint8_t *lens, uint8_t *count) {
+    if (!root) return;
+    if (!root->left && !root->right) {
+        syms[*count] = root->symbol;
+        lens[*count] = (depth == 0) ? 1 : depth;
+        (*count)++;
+        return;
+    }
+    GetCodeLengths(root->left, depth + 1, syms, lens, count);
+    GetCodeLengths(root->right, depth + 1, syms, lens, count);
+}
+
+void Process_Source_Coding(int32_t data_in[3][101], DataPacket_t *packet) {
+    uint32_t total_elements = 3 * 101;
+    SymbolCode_t unique_syms[303];
+    uint8_t unique_count = 0;
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 101; j++) {
+            int16_t val = (int16_t)data_in[i][j];
+            int found = -1;
+            for (int k = 0; k < unique_count; k++) {
+                if (unique_syms[k].symbol == val) {
+                    found = k;
+                    break;
+                }
+            }
+            if (found != -1) {
+                unique_syms[found].freq++;
+            } else {
+                unique_syms[unique_count].symbol = val;
+                unique_syms[unique_count].freq = 1;
+                unique_count++;
+            }
+        }
+    }
+
+    packet->alphabet_size = unique_count;
+
+    packet->source_entropy = 0.0f;
+    for (int i = 0; i < unique_count; i++) {
+        float p = (float)unique_syms[i].freq / total_elements;
+        packet->source_entropy -= p * log2f(p);
+    }
+
+    HuffmanNode_t nodes[606];
+    int node_idx = 0;
+    HuffmanNode_t *heap[303];
+    int heap_size = unique_count;
+
+    for (int i = 0; i < unique_count; i++) {
+        nodes[node_idx].symbol = unique_syms[i].symbol;
+        nodes[node_idx].freq = unique_syms[i].freq;
+        nodes[node_idx].left = NULL;
+        nodes[node_idx].right = NULL;
+        heap[i] = &nodes[node_idx];
+        node_idx++;
+    }
+
+    while (heap_size > 1) {
+        for (int i = 0; i < heap_size - 1; i++) {
+            for (int j = i + 1; j < heap_size; j++) {
+                if (heap[i]->freq > heap[j]->freq) {
+                    HuffmanNode_t *tmp = heap[i];
+                    heap[i] = heap[j];
+                    heap[j] = tmp;
+                }
+            }
+        }
+        HuffmanNode_t *left = heap[0];
+        HuffmanNode_t *right = heap[1];
+
+        HuffmanNode_t *parent = &nodes[node_idx++];
+        parent->symbol = 0;
+        parent->freq = left->freq + right->freq;
+        parent->left = left;
+        parent->right = right;
+
+        heap[0] = parent;
+        for (int i = 1; i < heap_size - 1; i++) {
+            heap[i] = heap[i + 1];
+        }
+        heap_size--;
+    }
+
+    HuffmanNode_t *root = heap[0];
+
+    uint8_t raw_lens[303];
+    int16_t raw_syms[303];
+    uint8_t extracted_count = 0;
+    GetCodeLengths(root, 0, raw_syms, raw_lens, &extracted_count);
+
+    SymbolCode_t canonical_list[MAX_UNIQUE_SYMBOLS];
+    for (int i = 0; i < unique_count && i < MAX_UNIQUE_SYMBOLS; i++) {
+        canonical_list[i].symbol = raw_syms[i];
+        canonical_list[i].code_len = raw_lens[i];
+    }
+
+    qsort(canonical_list, unique_count, sizeof(SymbolCode_t), CompareSymbols);
+
+    uint32_t current_code = 0;
+    uint8_t current_len = 0;
+    for (int i = 0; i < unique_count; i++) {
+        while (current_len < canonical_list[i].code_len) {
+            current_code <<= 1;
+            current_len++;
+        }
+        canonical_list[i].code = current_code;
+        current_code++;
+
+        packet->symbols[i] = canonical_list[i].symbol;
+        packet->bit_lengths[i] = canonical_list[i].code_len;
+    }
+
+    float avg_len = 0.0f;
+    for (int i = 0; i < unique_count; i++) {
+        float p = (float)unique_syms[i].freq / total_elements;
+        avg_len += p * canonical_list[i].code_len;
+    }
+    packet->entropy_after_source = avg_len;
+    packet->compression_ratio = (16.0f) / avg_len;
+
+    memset(packet->encoded_data, 0, sizeof(packet->encoded_data));
+    for (int axis = 0; axis < 3; axis++) {
+        uint32_t bit_ptr = 0;
+        for (int sample = 0; sample < 101; sample++) {
+            int16_t target_val = (int16_t)data_in[axis][sample];
+            uint32_t target_code = 0;
+            uint8_t target_len = 0;
+
+            for (int k = 0; k < unique_count; k++) {
+                if (canonical_list[k].symbol == target_val) {
+                    target_code = canonical_list[k].code;
+                    target_len = canonical_list[k].code_len;
+                    break;
+                }
+            }
+
+            for (int b = 0; b < target_len; b++) {
+                uint8_t bit = (target_code >> (target_len - 1 - b)) & 0x01;
+                uint32_t byte_pos = bit_ptr / 8;
+                uint8_t bit_pos = 7 - (bit_ptr % 8);
+                if (byte_pos < MAX_STREAM_BYTES) {
+                    packet->encoded_data[axis][byte_pos] |= (bit << bit_pos);
+                }
+                bit_ptr++;
+            }
+        }
+        packet->bit_lens[axis] = bit_ptr;
+    }
+}

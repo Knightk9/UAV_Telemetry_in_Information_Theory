@@ -1,0 +1,3 @@
+../Core/Src/huffman.c:6:12:CompareSymbols	2
+../Core/Src/huffman.c:15:13:GetCodeLengths	5
+../Core/Src/huffman.c:27:6:Process_Source_Coding	24

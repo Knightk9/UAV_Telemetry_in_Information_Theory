@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<item key="replaceBarOpen" value="false"/>
+	<list key="searchhistory">
+		<item value="NRF24L01_PingPong_Handler"/>
+		<item value="0x00"/>
+		<item value="0x06"/>
+		<item value="snprintf"/>
+		<item value="mpu_reset_fifo"/>
+		<item value="lcd_line1"/>
+		<item value="2048"/>
+		<item value="1024"/>
+		<item value="alphabet_size"/>
+		<item value="Process_Source_Coding"/>
+		<item value="tx_packet"/>
+		<item value="DataPacket_t"/>
+		<item value="alphabet"/>
+		<item value="MAX_UNIQUE_SYMBOLS"/>
+		<item value="MAX_UNIQUE_SYMBOL"/>
+	</list>
+</section>

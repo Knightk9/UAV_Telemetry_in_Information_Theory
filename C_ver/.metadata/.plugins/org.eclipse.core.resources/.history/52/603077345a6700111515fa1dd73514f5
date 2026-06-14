@@ -1,0 +1,496 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+/* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include "huffman.h"
+#include "convolutional.h"
+#include "inv_mpu.h"
+#include "inv_mpu_dmp_motion_driver.h"
+/* USER CODE END Includes */
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
+SPI_HandleTypeDef hspi1;
+
+/* USER CODE BEGIN PV */
+uint32_t frame_counter = 0;
+int32_t current_measurements[3] = {0};
+int32_t previous_measurements[3] = {0};
+int32_t data_matrix[3][101];
+uint8_t matrix_column_idx = 0;
+
+uint32_t timestamp_sample_first = 0;
+uint32_t timestamp_sample_last = 0;
+
+DataPacket_t tx_packet;
+uint8_t channel_encoded_buffer[2048];
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_I2C1_Init(void);
+/* USER CODE BEGIN PFP */
+void NRF24L01_Transmit(uint8_t *data, uint32_t size);
+void LCD_Init(void);
+void LCD_SendCommand(uint8_t cmd);
+void LCD_SendData(uint8_t data);
+void LCD_DisplayString(uint8_t row, uint8_t col, char *str);
+void MPU6050_Read_DMP(int32_t *p, int32_t *y, int32_t *r);
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_SPI1_Init();
+  MX_I2C1_Init();
+
+  /* USER CODE BEGIN 2 */
+  LCD_Init();
+
+  while (mpu_init(NULL) != 0) {
+      LCD_DisplayString(0, 0, "MPU Init Fail!");
+      HAL_Delay(500);
+  }
+  mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL);
+  mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);
+  dmp_load_motion_driver_firmware();
+  dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL);
+  dmp_set_fifo_rate(100);
+  mpu_set_dmp_state(1);
+
+  LCD_DisplayString(0, 0, "MPU DMP OK!   ");
+  HAL_Delay(1000);
+
+  char lcd_line1[17];
+  char lcd_line2[17];
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    int32_t raw_pitch = 0, raw_yaw = 0, raw_roll = 0;
+    MPU6050_Read_DMP(&raw_pitch, &raw_yaw, &raw_roll);
+
+    // Quantization
+    current_measurements[0] = raw_pitch;
+    current_measurements[1] = raw_yaw;
+    current_measurements[2] = raw_roll;
+
+    // Update LCD pitch, yaw, roll display
+    int16_t disp_p = (int16_t)(current_measurements[0] / 10);
+    int16_t disp_y = (int16_t)(current_measurements[1] / 10);
+    int16_t disp_r = (int16_t)(current_measurements[2] / 10);
+
+    snprintf(lcd_line1, sizeof(lcd_line1), "%+04d %+05d %+05d", disp_p, disp_y, disp_r);
+    LCD_DisplayString(0, 0, lcd_line1);
+
+    if (matrix_column_idx == 0) {
+        timestamp_sample_first = HAL_GetTick();
+
+        data_matrix[0][0] = current_measurements[0];
+        data_matrix[1][0] = current_measurements[1];
+        data_matrix[2][0] = current_measurements[2];
+
+        previous_measurements[0] = current_measurements[0];
+        previous_measurements[1] = current_measurements[1];
+        previous_measurements[2] = current_measurements[2];
+        matrix_column_idx = 1;
+    }
+    else {
+        data_matrix[0][matrix_column_idx] = current_measurements[0] - previous_measurements[0];
+        data_matrix[1][matrix_column_idx] = current_measurements[1] - previous_measurements[1];
+        data_matrix[2][matrix_column_idx] = current_measurements[2] - previous_measurements[2];
+
+        previous_measurements[0] = current_measurements[0];
+        previous_measurements[1] = current_measurements[1];
+        previous_measurements[2] = current_measurements[2];
+        matrix_column_idx++;
+
+        if (matrix_column_idx >= 101) {
+            timestamp_sample_last = HAL_GetTick();
+
+            tx_packet.frame_id = frame_counter++;
+            tx_packet.delayMin = HAL_GetTick() - timestamp_sample_last;
+
+            Process_Source_Coding(data_matrix, &tx_packet);
+
+            tx_packet.delayMax = HAL_GetTick() - timestamp_sample_first;
+
+            // Update source entropy and compression ratio
+            snprintf(lcd_line2, sizeof(lcd_line2), "E %02.3f C %02.2f", tx_packet.source_entropy, tx_packet.compression_ratio);
+            LCD_DisplayString(1, 0, lcd_line2);
+
+            // Mã hóa kênh Tích chập
+            memset(channel_encoded_buffer, 0, sizeof(channel_encoded_buffer));
+            uint32_t encoded_bytes_len = Process_Channel_Coding((uint8_t*)&tx_packet, sizeof(DataPacket_t), channel_encoded_buffer);
+
+            // Truyền vô tuyến NRF24L01
+            NRF24L01_Transmit(channel_encoded_buffer, encoded_bytes_len);
+
+            matrix_column_idx = 0;
+        }
+    }
+    HAL_Delay(10);
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+}
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 25;
+  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+  /* USER CODE BEGIN I2C1_Init 0 */
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+  /* USER CODE END I2C1_Init 2 */
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+  /* USER CODE BEGIN SPI1_Init 0 */
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+  /* USER CODE END SPI1_Init 1 */
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+  /* USER CODE END SPI1_Init 2 */
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA3 PA4 PA8 PA9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB12 PB13 PB14 PB15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  // Khởi tạo chân IRQ làm Input
+  GPIO_InitStruct.Pin = NRF_IRQ_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(NRF_IRQ_GPIO_PORT, &GPIO_InitStruct);
+
+  // Ép trạng thái logic mặc định cho SPI NRF24L01 (Sửa lỗi CSN tự kéo LOW của CubeMX)
+  HAL_GPIO_WritePin(NRF_CE_GPIO_PORT, NRF_CE_PIN, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(NRF_CSN_GPIO_PORT, NRF_CSN_PIN, GPIO_PIN_SET);
+  /* USER CODE END MX_GPIO_Init_2 */
+}
+
+/* USER CODE BEGIN 4 */
+void NRF24L01_Transmit(uint8_t *data, uint32_t size) {
+    uint32_t bytes_sent = 0;
+    uint8_t tx_payload[32];
+
+    while (bytes_sent < size) {
+        uint8_t chunk_size = (size - bytes_sent >= 32) ? 32 : (size - bytes_sent);
+
+        memset(tx_payload, 0, 32);
+        memcpy(tx_payload, &data[bytes_sent], chunk_size);
+
+        // Kéo CSN xuống LOW để bắt đầu giao tiếp SPI
+        HAL_GPIO_WritePin(NRF_CSN_GPIO_PORT, NRF_CSN_PIN, GPIO_PIN_RESET);
+
+        // Gửi mã lệnh W_TX_PAYLOAD (0xA0)
+        uint8_t cmd = 0xA0;
+        HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+
+        // Gửi data
+        HAL_SPI_Transmit(&hspi1, tx_payload, 32, HAL_MAX_DELAY);
+
+        // Kéo CSN lên HIGH kết thúc SPI
+        HAL_GPIO_WritePin(NRF_CSN_GPIO_PORT, NRF_CSN_PIN, GPIO_PIN_SET);
+
+        // Tạo xung CE > 10us để phát
+        HAL_GPIO_WritePin(NRF_CE_GPIO_PORT, NRF_CE_PIN, GPIO_PIN_SET);
+        HAL_Delay(1);
+        HAL_GPIO_WritePin(NRF_CE_GPIO_PORT, NRF_CE_PIN, GPIO_PIN_RESET);
+
+        HAL_Delay(2);
+
+        bytes_sent += chunk_size;
+    }
+}
+
+void LCD_PulseEnable(void) {
+    HAL_GPIO_WritePin(LCD_E_GPIO_PORT, LCD_E_PIN, GPIO_PIN_SET);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(LCD_E_GPIO_PORT, LCD_E_PIN, GPIO_PIN_RESET);
+    HAL_Delay(1);
+}
+
+void LCD_Write4Bit(uint8_t val) {
+    HAL_GPIO_WritePin(LCD_D4_GPIO_PORT, LCD_D4_PIN, (val >> 0) & 0x01);
+    HAL_GPIO_WritePin(LCD_D5_GPIO_PORT, LCD_D5_PIN, (val >> 1) & 0x01);
+    HAL_GPIO_WritePin(LCD_D6_GPIO_PORT, LCD_D6_PIN, (val >> 2) & 0x01);
+    HAL_GPIO_WritePin(LCD_D7_GPIO_PORT, LCD_D7_PIN, (val >> 3) & 0x01);
+    LCD_PulseEnable();
+}
+
+void LCD_SendCommand(uint8_t cmd) {
+    HAL_GPIO_WritePin(LCD_RS_GPIO_PORT, LCD_RS_PIN, GPIO_PIN_RESET);
+    LCD_Write4Bit(cmd >> 4);
+    LCD_Write4Bit(cmd & 0x0F);
+}
+
+void LCD_SendData(uint8_t data) {
+    HAL_GPIO_WritePin(LCD_RS_GPIO_PORT, LCD_RS_PIN, GPIO_PIN_SET);
+    LCD_Write4Bit(data >> 4);
+    LCD_Write4Bit(data & 0x0F);
+}
+
+void LCD_Init(void) {
+    HAL_Delay(50);
+    HAL_GPIO_WritePin(LCD_RS_GPIO_PORT, LCD_RS_PIN, GPIO_PIN_RESET);
+    LCD_Write4Bit(0x03);
+    HAL_Delay(5);
+    LCD_Write4Bit(0x03);
+    HAL_Delay(1);
+    LCD_Write4Bit(0x03);
+    LCD_Write4Bit(0x02);
+
+    LCD_SendCommand(0x28);
+    LCD_SendCommand(0x0C);
+    LCD_SendCommand(0x06);
+    LCD_SendCommand(0x01);
+    HAL_Delay(2);
+}
+
+void LCD_DisplayString(uint8_t row, uint8_t col, char *str) {
+    uint8_t address = (row == 0) ? (0x80 + col) : (0xC0 + col);
+    LCD_SendCommand(address);
+    while (*str) {
+        LCD_SendData((uint8_t)*str++);
+    }
+}
+
+void MPU6050_Read_DMP(int32_t *p, int32_t *y, int32_t *r) {
+    short gyro[3], accel[3], sensors;
+    long quat[4];
+    unsigned char more;
+    float q0, q1, q2, q3;
+    float pitch, yaw, roll;
+
+    // Rút gói dữ liệu từ FIFO buffer
+    if (dmp_read_fifo(gyro, accel, quat, NULL, &sensors, &more) == 0) {
+        if (sensors & INV_WXYZ_QUAT) {
+            // DMP xuất Quaternion dưới dạng số nguyên lớn, phải chia cho 2^30
+            q0 = quat[0] / 1073741824.0f;
+            q1 = quat[1] / 1073741824.0f;
+            q2 = quat[2] / 1073741824.0f;
+            q3 = quat[3] / 1073741824.0f;
+
+            // Dùng Toán học giải mã Quaternion sang Euler Angles (Radian)
+            pitch = asin(2.0f * (q0*q2 - q3*q1));
+            yaw   = atan2(2.0f * (q0*q3 + q1*q2), q0*q0 + q1*q1 - q2*q2 - q3*q3);
+            roll  = atan2(2.0f * (q0*q1 + q2*q3), q0*q0 - q1*q1 - q2*q2 + q3*q3);
+
+            // Đổi Radian sang Độ, lượng tử hóa (nhân 100) rồi ép kiểu như thiết kế
+            // Hệ số 5729.57795f chính là (180 / PI) * 100
+            *p = (int32_t)(pitch * 5729.57795f);
+            *y = (int32_t)(yaw * 5729.57795f);
+            *r = (int32_t)(roll * 5729.57795f);
+        }
+    }
+}
+/* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
+#ifdef  USE_FULL_ASSERT
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */
