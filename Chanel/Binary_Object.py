@@ -368,7 +368,8 @@ def DynamicPrograming_Viterbi_Algorithm(processed_bits_string):
 
 
 def Receiver(path_file, path_output):
-    
+    global Packet,Packet_loss
+    Packet += 1
     with open(path_file, 'r', encoding='utf-8') as f:
         packet_data = json.load(f)
 
@@ -382,7 +383,8 @@ def Receiver(path_file, path_output):
     
     if BER > 0.5:
         print("❌ File da loi hon 50%, Khong the Ma hoa tiep duoc nua")
- 
+        Packet_loss += 1
+        print("Packet_loss: ")
         
         # 🛠️ Tính toán Packet Loss real-time ngay trước khi thoát hàm
 
@@ -394,10 +396,10 @@ def Receiver(path_file, path_output):
     texxt, delay = Huffman_Decoder(packet_data, path_output, os.path.basename(path_file))
     
     # Tính thông lượng thực tế (bit/s hoặc ký tự/s)
-    throughput = (len_of_bits - total_bits_error) / delay if delay > 0 else 0
+    throughput = (len_of_bits) / delay if delay > 0 else 0
     
     # 🛠️ Sửa lỗi chữ f nằm trong chuỗi in và làm tròn .2f cho gọn
-    print(f" -> Ký tự khôi phục trên giây: {throughput:.2f} ký tự/s")
+    print(f" -> Ký tự khôi phục trên giây(Throughput): {throughput:.2f} ký tự/s")
     print(f" -> Tỷ lệ ký tự bị lỗi (BER): {BER * 100:.2f} %")
     print(f"✔️ Đã giải mã Huffman thành công!")
     

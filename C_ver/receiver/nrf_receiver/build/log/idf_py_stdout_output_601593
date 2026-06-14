@@ -1,0 +1,270 @@
+Command: /home/khanh/.espressif/python_env/idf6.0_py3.13_env/bin/python /home/khanh/.espressif/v6.0/esp-idf/tools/idf_monitor.py -p /dev/ttyUSB0 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /home/khanh/Programming/LTTT/receiver/nrf_receiver/build/nrf_receiver.elf /home/khanh/Programming/LTTT/receiver/nrf_receiver/build/bootloader/bootloader.elf -m '/home/khanh/.espressif/python_env/idf6.0_py3.13_env/bin/python' '/home/khanh/.espressif/v6.0/esp-idf/tools/idf.py'
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0040,len:6272
+load:0x40078000,len:15848
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (27) boot: ESP-IDF v6.0 2nd stage bootloader[0m
+[0;32mI (27) boot: compile time Jun 14 2026 17:15:43[0m
+[0;32mI (28) boot: Multicore bootloader[0m
+[0;32mI (29) boot: chip revision: v3.1[0m
+[0;32mI (31) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (35) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (39) boot.esp32: SPI Flash Size : 2MB[0m
+[0;32mI (42) boot: Enabling RNG early entropy source...[0m
+[0;32mI (47) boot: Partition Table:[0m
+[0;32mI (49) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (56) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (69) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (75) boot: End of partition table[0m
+[0;32mI (79) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=0a100h ( 41216) map[0m
+[0;32mI (101) esp_image: segment 1: paddr=0001a128 vaddr=3ffb0000 size=02bf0h ( 11248) load[0m
+[0;32mI (105) esp_image: segment 2: paddr=0001cd20 vaddr=40080000 size=032f8h ( 13048) load[0m
+[0;32mI (111) esp_image: segment 3: paddr=00020020 vaddr=400d0020 size=0fe60h ( 65120) map[0m
+[0;32mI (135) esp_image: segment 4: paddr=0002fe88 vaddr=400832f8 size=09814h ( 38932) load[0m
+[0;32mI (151) esp_image: segment 5: paddr=000396a4 vaddr=50000000 size=00028h (    40) load[0m
+[0;32mI (158) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (158) boot: Disabling RNG early entropy source...[0m
+[0;32mI (170) cpu_start: Multicore app[0m
+[0;32mI (178) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (178) cpu_start: Pro cpu start user code[0m
+[0;32mI (178) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (180) app_init: Application information:[0m
+[0;32mI (184) app_init: Project name:     nrf_receiver[0m
+[0;32mI (188) app_init: App version:      1[0m
+[0;32mI (191) app_init: Compile time:     Jun 14 2026 17:15:24[0m
+[0;32mI (196) app_init: ELF file SHA256:  acc04dff7...[0m
+[0;32mI (201) app_init: ESP-IDF:          v6.0[0m
+[0;32mI (204) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (208) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (212) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (216) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (222) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (227) heap_init: At 3FFB35D8 len 0002CA28 (178 KiB): DRAM[0m
+[0;32mI (233) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (238) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (244) heap_init: At 4008CB0C len 000134F4 (77 KiB): IRAM[0m
+[0;33mW (250) spi_flash: Detected boya flash chip but using generic driver. For optimal functionality, enable `SPI_FLASH_SUPPORT_BOYA_CHIP` in menuconfig[0m
+[0;32mI (262) spi_flash: detected chip: generic[0m
+[0;32mI (265) spi_flash: flash io: dio[0m
+[0;33mW (268) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;32mI (282) main_task: Started on CPU0[0m
+[0;32mI (292) main_task: Calling app_main()[0m
+[0;32mI (292) ESP32_RECEIVER: Listening...[0m
+[0;32mI (15362) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #0 ====
+[0;32mI (15362) ESP32_RECEIVER: - Giá trị gốc: Pitch: -16.10 | Yaw: 3.88 | Roll: -0.00[0m
+[0;32mI (15362) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (15372) ESP32_RECEIVER: [*] BER (Bit Error Rate): 4.0782 %[0m
+[0;32mI (15372) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (15382) ESP32_RECEIVER: [*] Throughput: 14241.38 bps[0m
+[0;32mI (15382) ESP32_RECEIVER: [*] Source entropy: 4.89[0m
+[0;32mI (15392) ESP32_RECEIVER: [*] Compression Ratio: 2.48[0m
+[0;32mI (15392) ESP32_RECEIVER: [*] Total Delay: 1902.62 ms[0m
+[0;32mI (15402) ESP32_RECEIVER:     -> Delay max ben gui: 1607 ms[0m
+[0;32mI (15402) ESP32_RECEIVER:     -> Lan truyền sóng: 845.999939 us[0m
+[0;32mI (15412) ESP32_RECEIVER:     -> Delay ben nhan: 294.78 ms[0m
+[0;32mI (15412) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (17402) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #1 ====
+[0;32mI (17402) ESP32_RECEIVER: - Giá trị gốc: Pitch: -6.56 | Yaw: 1.13 | Roll: 2.49[0m
+[0;32mI (17412) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (17412) ESP32_RECEIVER: [*] BER (Bit Error Rate): 3.8233 %[0m
+[0;32mI (17422) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (17422) ESP32_RECEIVER: [*] Throughput: 14337.32 bps[0m
+[0;32mI (17432) ESP32_RECEIVER: [*] Source entropy: 4.45[0m
+[0;32mI (17432) ESP32_RECEIVER: [*] Compression Ratio: 3.02[0m
+[0;32mI (17442) ESP32_RECEIVER: [*] Total Delay: 1894.92 ms[0m
+[0;32mI (17442) ESP32_RECEIVER:     -> Delay max ben gui: 1601 ms[0m
+[0;32mI (17452) ESP32_RECEIVER:     -> Lan truyền sóng: 886.999939 us[0m
+[0;32mI (17452) ESP32_RECEIVER:     -> Delay ben nhan: 293.03 ms[0m
+[0;32mI (17462) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (20252) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #2 ====
+[0;32mI (20252) ESP32_RECEIVER: - Giá trị gốc: Pitch: -6.56 | Yaw: -17.91 | Roll: 18.15[0m
+[0;32mI (20252) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (20262) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.5228 %[0m
+[0;32mI (20262) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (20272) ESP32_RECEIVER: [*] Throughput: 9497.75 bps[0m
+[0;32mI (20272) ESP32_RECEIVER: [*] Source entropy: 7.42[0m
+[0;32mI (20282) ESP32_RECEIVER: [*] Compression Ratio: 2.09[0m
+[0;32mI (20282) ESP32_RECEIVER: [*] Total Delay: 2690.95 ms[0m
+[0;32mI (20292) ESP32_RECEIVER:     -> Delay max ben gui: 2357 ms[0m
+[0;32mI (20292) ESP32_RECEIVER:     -> Lan truyền sóng: 881.000061 us[0m
+[0;32mI (20302) ESP32_RECEIVER:     -> Delay ben nhan: 333.07 ms[0m
+[0;32mI (20312) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (23162) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #3 ====
+[0;32mI (23162) ESP32_RECEIVER: - Giá trị gốc: Pitch: -6.56 | Yaw: -17.91 | Roll: 18.15[0m
+[0;32mI (23172) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (23172) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.7281 %[0m
+[0;32mI (23182) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (23182) ESP32_RECEIVER: [*] Throughput: 9094.74 bps[0m
+[0;32mI (23192) ESP32_RECEIVER: [*] Source entropy: 7.47[0m
+[0;32mI (23192) ESP32_RECEIVER: [*] Compression Ratio: 2.05[0m
+[0;32mI (23202) ESP32_RECEIVER: [*] Total Delay: 2803.82 ms[0m
+[0;32mI (23202) ESP32_RECEIVER:     -> Delay max ben gui: 2490 ms[0m
+[0;32mI (23212) ESP32_RECEIVER:     -> Lan truyền sóng: 837.500000 us[0m
+[0;32mI (23212) ESP32_RECEIVER:     -> Delay ben nhan: 312.98 ms[0m
+[0;32mI (23222) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (33252) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #0 ====
+[0;32mI (33252) ESP32_RECEIVER: - Giá trị gốc: Pitch: 27.68 | Yaw: -21.63 | Roll: -4.58[0m
+[0;32mI (33252) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (33262) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.5617 %[0m
+[0;32mI (33262) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (33272) ESP32_RECEIVER: [*] Throughput: 9422.91 bps[0m
+[0;32mI (33272) ESP32_RECEIVER: [*] Source entropy: 7.40[0m
+[0;32mI (33282) ESP32_RECEIVER: [*] Compression Ratio: 2.10[0m
+[0;32mI (33282) ESP32_RECEIVER: [*] Total Delay: 2711.16 ms[0m
+[0;32mI (33292) ESP32_RECEIVER:     -> Delay max ben gui: 2377 ms[0m
+[0;32mI (33292) ESP32_RECEIVER:     -> Lan truyền sóng: 832.999939 us[0m
+[0;32mI (33302) ESP32_RECEIVER:     -> Delay ben nhan: 333.32 ms[0m
+[0;32mI (33302) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (35612) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #1 ====
+[0;32mI (35612) ESP32_RECEIVER: - Giá trị gốc: Pitch: -2.42 | Yaw: -19.69 | Roll: -5.06[0m
+[0;32mI (35612) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (35622) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.0626 %[0m
+[0;32mI (35632) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (35632) ESP32_RECEIVER: [*] Throughput: 11420.35 bps[0m
+[0;32mI (35642) ESP32_RECEIVER: [*] Source entropy: 6.89[0m
+[0;32mI (35642) ESP32_RECEIVER: [*] Compression Ratio: 2.16[0m
+[0;32mI (35652) ESP32_RECEIVER: [*] Total Delay: 2249.32 ms[0m
+[0;32mI (35652) ESP32_RECEIVER:     -> Delay max ben gui: 1930 ms[0m
+[0;32mI (35662) ESP32_RECEIVER:     -> Lan truyền sóng: 832.999939 us[0m
+[0;32mI (35662) ESP32_RECEIVER:     -> Delay ben nhan: 318.48 ms[0m
+[0;32mI (35672) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (38272) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #2 ====
+[0;32mI (38272) ESP32_RECEIVER: - Giá trị gốc: Pitch: 649.24 | Yaw: -19.69 | Roll: -5.06[0m
+[0;32mI (38272) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (38272) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.2892 %[0m
+[0;32mI (38282) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (38292) ESP32_RECEIVER: [*] Throughput: 10147.98 bps[0m
+[0;32mI (38292) ESP32_RECEIVER: [*] Source entropy: 7.26[0m
+[0;32mI (38292) ESP32_RECEIVER: [*] Compression Ratio: 2.10[0m
+[0;32mI (38302) ESP32_RECEIVER: [*] Total Delay: 2525.03 ms[0m
+[0;32mI (38302) ESP32_RECEIVER:     -> Delay max ben gui: 2196 ms[0m
+[0;32mI (38312) ESP32_RECEIVER:     -> Lan truyền sóng: 832.999939 us[0m
+[0;32mI (38322) ESP32_RECEIVER:     -> Delay ben nhan: 328.20 ms[0m
+[0;32mI (38322) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (41082) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #3 ====
+[0;32mI (41082) ESP32_RECEIVER: - Giá trị gốc: Pitch: -40.11 | Yaw: -13.74 | Roll: 9.57[0m
+[0;32mI (41082) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (41082) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.4131 %[0m
+[0;32mI (41092) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (41102) ESP32_RECEIVER: [*] Throughput: 9506.48 bps[0m
+[0;32mI (41102) ESP32_RECEIVER: [*] Source entropy: 7.41[0m
+[0;32mI (41102) ESP32_RECEIVER: [*] Compression Ratio: 2.08[0m
+[0;32mI (41112) ESP32_RECEIVER: [*] Total Delay: 2691.74 ms[0m
+[0;32mI (41112) ESP32_RECEIVER:     -> Delay max ben gui: 2358 ms[0m
+[0;32mI (41122) ESP32_RECEIVER:     -> Lan truyền sóng: 835.999939 us[0m
+[0;32mI (41132) ESP32_RECEIVER:     -> Delay ben nhan: 332.91 ms[0m
+[0;32mI (41132) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (44082) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #4 ====
+[0;32mI (44082) ESP32_RECEIVER: - Giá trị gốc: Pitch: -34.07 | Yaw: -24.94 | Roll: 9.57[0m
+[0;32mI (44092) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (44092) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.8308 %[0m
+[0;32mI (44102) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (44102) ESP32_RECEIVER: [*] Throughput: 8799.00 bps[0m
+[0;32mI (44112) ESP32_RECEIVER: [*] Source entropy: 7.55[0m
+[0;32mI (44112) ESP32_RECEIVER: [*] Compression Ratio: 2.04[0m
+[0;32mI (44122) ESP32_RECEIVER: [*] Total Delay: 2894.76 ms[0m
+[0;32mI (44122) ESP32_RECEIVER:     -> Delay max ben gui: 2556 ms[0m
+[0;32mI (44132) ESP32_RECEIVER:     -> Lan truyền sóng: 832.999939 us[0m
+[0;32mI (44132) ESP32_RECEIVER:     -> Delay ben nhan: 337.93 ms[0m
+[0;32mI (44142) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (47132) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #5 ====
+[0;32mI (47132) ESP32_RECEIVER: - Giá trị gốc: Pitch: -6.93 | Yaw: -10.63 | Roll: 317.14[0m
+[0;32mI (47132) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (47142) ESP32_RECEIVER: [*] BER (Bit Error Rate): 10.0467 %[0m
+[0;32mI (47142) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (47152) ESP32_RECEIVER: [*] Throughput: 8661.61 bps[0m
+[0;32mI (47152) ESP32_RECEIVER: [*] Source entropy: 7.58[0m
+[0;32mI (47162) ESP32_RECEIVER: [*] Compression Ratio: 2.03[0m
+[0;32mI (47162) ESP32_RECEIVER: [*] Total Delay: 2933.63 ms[0m
+[0;32mI (47172) ESP32_RECEIVER:     -> Delay max ben gui: 2594 ms[0m
+[0;32mI (47172) ESP32_RECEIVER:     -> Lan truyền sóng: 881.500000 us[0m
+[0;32mI (47182) ESP32_RECEIVER:     -> Delay ben nhan: 338.75 ms[0m
+[0;32mI (47182) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (50162) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #6 ====
+[0;32mI (50162) ESP32_RECEIVER: - Giá trị gốc: Pitch: 43.16 | Yaw: -22.99 | Roll: -6.33[0m
+[0;32mI (50162) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (50172) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.9476 %[0m
+[0;32mI (50172) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (50182) ESP32_RECEIVER: [*] Throughput: 8700.88 bps[0m
+[0;32mI (50182) ESP32_RECEIVER: [*] Source entropy: 7.57[0m
+[0;32mI (50192) ESP32_RECEIVER: [*] Compression Ratio: 2.04[0m
+[0;32mI (50192) ESP32_RECEIVER: [*] Total Delay: 2923.61 ms[0m
+[0;32mI (50202) ESP32_RECEIVER:     -> Delay max ben gui: 2584 ms[0m
+[0;32mI (50202) ESP32_RECEIVER:     -> Lan truyền sóng: 886.000061 us[0m
+[0;32mI (50212) ESP32_RECEIVER:     -> Delay ben nhan: 338.73 ms[0m
+[0;32mI (50212) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (53072) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #7 ====
+[0;32mI (53072) ESP32_RECEIVER: - Giá trị gốc: Pitch: 7.68 | Yaw: -7.91 | Roll: 4.62[0m
+[0;32mI (53072) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (53082) ESP32_RECEIVER: [*] BER (Bit Error Rate): 10.1069 %[0m
+[0;32mI (53082) ESP32_RECEIVER: [*] Packet Loss: 0.00 % (0 losses)[0m
+[0;32mI (53092) ESP32_RECEIVER: [*] Throughput: 9062.15 bps[0m
+[0;32mI (53092) ESP32_RECEIVER: [*] Source entropy: 7.45[0m
+[0;32mI (53102) ESP32_RECEIVER: [*] Compression Ratio: 2.03[0m
+[0;32mI (53102) ESP32_RECEIVER: [*] Total Delay: 2802.09 ms[0m
+[0;32mI (53112) ESP32_RECEIVER:     -> Delay max ben gui: 2466 ms[0m
+[0;32mI (53112) ESP32_RECEIVER:     -> Lan truyền sóng: 881.000061 us[0m
+[0;32mI (53122) ESP32_RECEIVER:     -> Delay ben nhan: 335.21 ms[0m
+[0;32mI (53122) ESP32_RECEIVER: ===================================[0m
+
+[0;33mW (55682) ESP32_RECEIVER: Frame Timeout! Cancel 3520 bytes...[0m
+[0;32mI (58722) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #9 ====
+[0;32mI (58722) ESP32_RECEIVER: - Giá trị gốc: Pitch: 7.68 | Yaw: 297.02 | Roll: 0.89[0m
+[0;32mI (58722) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (58732) ESP32_RECEIVER: [*] BER (Bit Error Rate): 9.8272 %[0m
+[0;32mI (58732) ESP32_RECEIVER: [*] Packet Loss: 10.00 % (1 losses)[0m
+[0;32mI (58742) ESP32_RECEIVER: [*] Throughput: 9309.85 bps[0m
+[0;32mI (58742) ESP32_RECEIVER: [*] Source entropy: 7.41[0m
+[0;32mI (58752) ESP32_RECEIVER: [*] Compression Ratio: 2.08[0m
+[0;32mI (58752) ESP32_RECEIVER: [*] Total Delay: 2736.03 ms[0m
+[0;32mI (58762) ESP32_RECEIVER:     -> Delay max ben gui: 2401 ms[0m
+[0;32mI (58762) ESP32_RECEIVER:     -> Lan truyền sóng: 881.500000 us[0m
+[0;32mI (58772) ESP32_RECEIVER:     -> Delay ben nhan: 334.14 ms[0m
+[0;32mI (58772) ESP32_RECEIVER: ===================================[0m
+
+[0;32mI (60712) ESP32_RECEIVER: [0m
+==== KẾT QUẢ KHÔI PHỤC GÓI #10 ====
+[0;32mI (60712) ESP32_RECEIVER: - Giá trị gốc: Pitch: -2.27 | Yaw: -39.25 | Roll: 1.56[0m
+[0;32mI (60712) ESP32_RECEIVER: --- ĐO LƯỜNG LÝ THUYẾT THÔNG TIN ---[0m
+[0;32mI (60712) ESP32_RECEIVER: [*] BER (Bit Error Rate): 6.3084 %[0m
+[0;32mI (60722) ESP32_RECEIVER: [*] Packet Loss: 9.09 % (1 losses)[0m
+[0;32mI (60732) ESP32_RECEIVER: [*] Throughput: 14113.28 bps[0m
+[0;32mI (60732) ESP32_RECEIVER: [*] Source entropy: 1.16[0m
+[0;32mI (60732) ESP32_RECEIVER: [*] Compression Ratio: 5.52[0m
+[0;32mI (60742) ESP32_RECEIVER: [*] Total Delay: 1875.25 ms[0m
+[0;32mI (60742) ESP32_RECEIVER:     -> Delay max ben gui: 1588 ms[0m
+[0;32mI (60752) ESP32_RECEIVER:     -> Lan truyền sóng: 881.500000 us[0m
+[0;32mI (60762) ESP32_RECEIVER:     -> Delay ben nhan: 286.37 ms[0m
+[0;32mI (60762) ESP32_RECEIVER: ===================================[0m
+

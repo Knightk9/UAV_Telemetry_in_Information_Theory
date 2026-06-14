@@ -1,0 +1,2 @@
+source /home/khanh/Programming/LTTT/receiver/nrf_receiver/build/bootloader/gdbinit/symbols
+source /home/khanh/Programming/LTTT/receiver/nrf_receiver/build/bootloader/gdbinit/connect
